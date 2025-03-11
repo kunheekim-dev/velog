@@ -25,6 +25,13 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Clean velog-posts folder (Remove old posts)
+        run: |
+          rm -rf velog-posts/*
+          git add -A
+          git commit -m "Delete all old blog posts" || echo "No files to delete"
+          git push || echo "No changes to push"
+
       - name: Run Update Script
         run: python scripts/update_blog.py
 
@@ -36,5 +43,5 @@ jobs:
       - name: Push Changes to GitHub
         run: |
           git add velog-posts/*
-          git commit -m "Auto-update blog posts"
-          git push https://${{ secrets.GH_PAT }}@github.com/kunheekim-dev/velog.git
+          git commit -m "Auto-update blog posts" || echo "No changes to commit"
+          git push || echo "No changes to push"
