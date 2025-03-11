@@ -35,8 +35,8 @@ for entry in feed.entries:
 
     # 2️⃣ 제목 가져오기 (파일명 문제 해결)
     raw_title = entry.title
-    max_length = 100  # 너무 긴 파일명 방지 (100자 제한)
-    safe_title = slugify(raw_title[:max_length])  # 특수문자 제거 및 변환
+    max_length = 50  # 너무 긴 파일명 방지 (50자 제한)
+    safe_title = slugify(raw_title)[:max_length]  # 특수문자 제거 및 50자 제한
 
     # 3️⃣ 파일 이름: "제목-ID.md" 형태로 저장 (제목이 바뀌어도 같은 파일 유지)
     file_name = f"{safe_title}-{post_id}.md"
