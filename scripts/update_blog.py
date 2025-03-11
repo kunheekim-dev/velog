@@ -2,6 +2,7 @@ import feedparser
 import git
 import os
 import re
+from slugify import slugify  # 한글 제목 문제 해결을 위한 라이브러리
 
 # 🔹 VELOG RSS 피드 URL (본인 벨로그 계정에 맞게 수정!)
 rss_url = 'https://api.velog.io/rss/@kunhee'
@@ -27,11 +28,16 @@ for entry in feed.entries:
     # 1️⃣ 글 ID 가져오기 (URL에서 추출)
     post_id = entry.link.split('/')[-1]  # 글의 고유 ID (예: 'abcdefg123456')
 
-    # 2️⃣ 파일 이름: "ID.md" 형태로 저장 (제목이 바뀌어도 같은 파일 유지)
-    file_name = f"{post_id}.md"
+    # 2️⃣ 제목 가져오기 (파일명 문제 해결)
+    raw_title = entry.title
+    max_length = 100  # 너무 긴 파일명 방지 (100자 제한)
+    safe_title = slugify(raw_title[:max_length])  # 특수문자 제거 및 변환
+
+    # 3️⃣ 파일 이름: "제목-ID.md" 형태로 저장 (제목이 바뀌어도 같은 파일 유지)
+    file_name = f"{safe_title}-{post_id}.md"
     file_path = os.path.join(posts_dir, file_name)
 
-    # 3️⃣ 기존 파일 여부 확인 (있으면 수정, 없으면 새로 추가)
+    # 4️⃣ 기존 파일 여부 확인 (있으면 수정, 없으면 새로 추가)
     if os.path.exists(file_path):
         # 파일이 존재하면, 기존 내용과 비교 후 수정
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -55,3 +61,4 @@ for entry in feed.entries:
 
 # 🔹 변경 사항을 GitHub에 푸시
 repo.git.push()
+print("✅ Velog posts successfully backed up to GitHub!")
