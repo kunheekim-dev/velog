@@ -30,28 +30,16 @@ feed = feedparser.parse(rss_url)
 
 # 🔹 각 글을 파일로 저장하고 커밋
 for entry in feed.entries:
-    # 1️⃣ 글 ID 가져오기 (URL에서 추출)
-    post_id = entry.link.split('/')[-1]  # 글의 고유 ID (예: 'abcdefg123456')
-
-    # 2️⃣ 제목 가져오기 (파일명 문제 해결)
+    # 1️⃣ 제목 가져오기 (파일명 문제 해결)
     raw_title = entry.title
     max_length = 50  # 너무 긴 파일명 방지 (50자 제한)
     safe_title = slugify(raw_title)[:max_length]  # 특수문자 제거 및 50자 제한
 
-    # 3️⃣ 파일 이름: "제목-ID.md" 형태로 저장 (제목이 바뀌어도 같은 파일 유지)
-    file_name = f"{safe_title}-{post_id}.md"
+    # 2️⃣ 파일 이름: "제목.md" 형태로 저장
+    file_name = f"{safe_title}.md"
     file_path = os.path.join(posts_dir, file_name)
 
-    # 파일 이름 충돌 방지를 위해 중복 체크
-    if os.path.exists(file_path):
-        base_name, ext = os.path.splitext(file_name)
-        counter = 1
-        while os.path.exists(file_path):
-            file_name = f"{base_name}_{counter}{ext}"
-            file_path = os.path.join(posts_dir, file_name)
-            counter += 1
-
-    # 4️⃣ 기존 파일 여부 확인 (있으면 수정, 없으면 새로 추가)
+    # 3️⃣ 기존 파일 여부 확인 (있으면 수정, 없으면 새로 추가)
     if os.path.exists(file_path):
         # 파일이 존재하면, 기존 내용과 비교 후 수정
         with open(file_path, 'r', encoding='utf-8') as file:
