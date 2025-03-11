@@ -3,37 +3,38 @@ name: Update Blog Posts
 on:
   push:
     branches:
-      - main  # main 브랜치에서 푸시될 때 실행
+      - main  # main 브랜치에 push될 때 실행
   schedule:
-    - cron: '0 15 * * *'  # 매일 자정 실행 (한국 시간 기준 UTC 15:00)
-  workflow_dispatch:  # 수동 실행 옵션 추가
+    - cron: '0 15 * * *'  # 매일 자정 (UTC 15:00 / 한국 기준 00:00) 실행
+  workflow_dispatch:  # 수동 실행 추가
 
 jobs:
   update_blog:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Install Dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Run Script
-      run: python scripts/update_blog.py
+      - name: Run Update Script
+        run: python scripts/update_blog.py
 
-    - name: Commit and Push Changes
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add .
-        git commit -m "Update blog posts" || echo "No changes to commit"
-        git push
-      env:
-        GH_PAT: ${{ secrets.GH_PAT }}
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Push Changes to GitHub
+        run: |
+          git add velog-posts/*
+          git commit -m "Auto-update blog posts"
+          git push https://${{ secrets.GH_PAT }}@github.com/kunheekim-dev/velog.git
