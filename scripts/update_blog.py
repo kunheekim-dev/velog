@@ -21,8 +21,9 @@ if not os.path.exists(posts_dir):
 repo = git.Repo(repo_path)
 
 # 🔹 GitHub Actions에서 실행될 때 사용자 정보 설정
-repo.config_writer().set_value("user", "name", "github-actions[bot]").release()
-repo.config_writer().set_value("user", "email", "github-actions[bot]@users.noreply.github.com").release()
+with repo.config_writer() as config:
+    config.set_value("user", "name", "github-actions[bot]")
+    config.set_value("user", "email", "github-actions[bot]@users.noreply.github.com")
 
 # 🔹 VELOG RSS 피드 파싱
 feed = feedparser.parse(rss_url)
@@ -40,6 +41,15 @@ for entry in feed.entries:
     # 3️⃣ 파일 이름: "제목-ID.md" 형태로 저장 (제목이 바뀌어도 같은 파일 유지)
     file_name = f"{safe_title}-{post_id}.md"
     file_path = os.path.join(posts_dir, file_name)
+
+    # 파일 이름 충돌 방지를 위해 중복 체크
+    if os.path.exists(file_path):
+        base_name, ext = os.path.splitext(file_name)
+        counter = 1
+        while os.path.exists(file_path):
+            file_name = f"{base_name}_{counter}{ext}"
+            file_path = os.path.join(posts_dir, file_name)
+            counter += 1
 
     # 4️⃣ 기존 파일 여부 확인 (있으면 수정, 없으면 새로 추가)
     if os.path.exists(file_path):
@@ -66,4 +76,3 @@ for entry in feed.entries:
 # 🔹 변경 사항을 GitHub에 푸시
 repo.git.push()
 print("✅ Velog posts successfully backed up to GitHub!")
-
